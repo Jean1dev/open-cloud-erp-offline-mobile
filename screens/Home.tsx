@@ -1,13 +1,32 @@
 import * as React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, View } from '../components/Themed';
+import { StyleSheet } from 'react-native';
+import { View } from '../components/Themed';
+import { Button, } from 'react-native-paper';
+import api from '../service/api';
+import { storeCliente, storeProduto } from '../storage';
 
 export default function Home() {
+  const [text, setText] = React.useState('Sincronizar')
+
+  const sincronizar = React.useCallback(() => {
+    setText('Sincronizando clientes...')
+    api.get('cliente').then(async (result) => {
+      await storeCliente(result.data)
+
+      setText('Sincronizando produtos...')
+
+      api.get('produto').then(async (result) => {
+        await storeProduto(result.data)
+        setText('Concluido')
+      })
+    })
+  }, [])
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => {}} style={styles.button}>
-        <Text>Sincronizar</Text>
-      </TouchableOpacity>
+      <Button icon="loading" mode="contained" onPress={sincronizar}>
+        {text}
+      </Button> 
     </View>
   );
 }
@@ -16,7 +35,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     fontSize: 20,
@@ -27,7 +45,4 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
-  button: {
-    color: '#000'
-  }
 });
