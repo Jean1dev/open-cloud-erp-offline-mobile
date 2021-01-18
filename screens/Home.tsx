@@ -1,30 +1,47 @@
+//@ts-nocheck
 import * as React from 'react';
 import { StyleSheet } from 'react-native';
 import { View } from '../components/Themed';
-import { Button, } from 'react-native-paper';
-import api from '../service/api';
-import { storeCliente, storeProduto } from '../storage';
+import { 
+  Button, 
+  ActivityIndicator, 
+  Colors,
+  Card,
+  Avatar
+} from 'react-native-paper';
+import Sincronizar from '../service/Sincronizacao';
+import { 
+  readVendas
+} from '../storage';
 
 export default function Home() {
   const [text, setText] = React.useState('Sincronizar')
+  const [totalVendasPendente, setTotalVendasPendente] = React.useState(0)
+
+  React.useEffect(() => {
+    readVendas().then(result => {
+      if (result) {
+        setTotalVendasPendente(result.length)
+      }
+    })
+  }, [])
 
   const sincronizar = React.useCallback(() => {
-    setText('Sincronizando clientes...')
-    api.get('cliente').then(async (result) => {
-      await storeCliente(result.data)
-
-      setText('Sincronizando produtos...')
-
-      api.get('produto').then(async (result) => {
-        await storeProduto(result.data)
-        setText('Concluido')
-      })
-    })
+    Sincronizar(setText)
   }, [])
 
   return (
     <View style={styles.container}>
-      <Button icon="loading" mode="contained" onPress={sincronizar}>
+      <ActivityIndicator animating={true} color={Colors.bl} />
+      <Card style={styles.card}>
+        <Card.Title
+          title={`${totalVendasPendente}`}
+          subtitle="Vendas Pendentes a sincronização"
+          left={(props) => <Avatar.Icon {...props} icon="cloud-sync-outline" />}
+        />
+
+      </Card>
+      <Button mode="contained" onPress={sincronizar}>
         {text}
       </Button> 
     </View>
@@ -34,7 +51,6 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
   },
   title: {
     fontSize: 20,
