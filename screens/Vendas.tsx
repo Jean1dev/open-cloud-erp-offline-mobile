@@ -9,8 +9,12 @@ import {
   Divider,
   Card,
   Button,
-  TextInput
+  TextInput,
+  Portal,
+  Dialog,
+  Paragraph
 } from 'react-native-paper';
+import { appContext } from '../context/useContext'
 
 export default function Vendas() {
   const [step, setStep] = React.useState(1)
@@ -18,6 +22,12 @@ export default function Vendas() {
   const [clientes, setClientes] = React.useState([])
   const [venda, setVenda] = React.useState({})
   const [alreadyLoad, setAlreadyLoad] = React.useState(false)
+  const { dataUpdated, update } = appContext()
+  const [visible, setVisible] = React.useState(false);
+
+  const showDialog = () => setVisible(true);
+
+  const hideDialog = () => setVisible(false);
 
   const setValues = (propName, propValue) => {
     setVenda({
@@ -32,22 +42,31 @@ export default function Vendas() {
   }, [venda])
 
   const addProduto = React.useCallback((prod) => {
-    const list = venda.itens ? venda.itens : []
+    const list = venda.itens || []
+    function getQuantidade() {
+      return prod.customizado ? prod.quantidade : 1
+    }
+
     if (list.length) {
       const produtoJaAdicionado = list.filter(produtos => produtos.id === prod.id)
 
       if (produtoJaAdicionado[0]) {
         const noCarrinho = list.filter(produtos => produtos.id != prod.id)
-        prod.quantidade = produtoJaAdicionado[0].quantidade + 1
+        prod.quantidade = produtoJaAdicionado[0].quantidade + getQuantidade()
         noCarrinho.push(prod)
         setValues('itens', noCarrinho)
         return
       }
     }
-    prod.quantidade = 1
+    prod.quantidade = getQuantidade()
     list.push(prod)
     setValues('itens', list)
   }, [venda])
+
+  const onLongPressButton = React.useCallback((prod) => {
+    setValues('produtoSelecionado', prod)
+    showDialog()
+  }, [])
 
   const plusProduto = React.useCallback((prod) => {
     prod.quantidade++
@@ -71,11 +90,19 @@ export default function Vendas() {
     const vendaCopy = venda
     vendaCopy.uuid = Math.random()
     vendaCopy.valorRecebido = venda.valorRecebido || totalVenda
-    console.log(vendaCopy)
     storeVendas(vendaCopy).then(() => {
       setStep(1)
       setVenda({})
+      update()
     })
+  }, [venda])
+
+  const inserirCustomProduto = React.useCallback(() => {
+    const produto = venda.produtoSelecionado
+    produto.quantidade = venda.quantidadeAlterada
+    produto.customizado = true
+    addProduto(produto)
+    hideDialog()
   }, [venda])
 
   const totalVenda = React.useMemo(() => {
@@ -91,11 +118,11 @@ export default function Vendas() {
       setProdutos(values || [])
       setAlreadyLoad(true)
     })
-  }, [alreadyLoad])
+  }, [alreadyLoad, dataUpdated])
 
   React.useEffect(() => {
     readCliente().then(values => setClientes(values || []))
-  }, [alreadyLoad])
+  }, [alreadyLoad, dataUpdated])
 
   if (alreadyLoad && produtos.length === 0) {
     setAlreadyLoad(false)
@@ -104,6 +131,22 @@ export default function Vendas() {
   if (step === 1) {
     return (
       <ScrollView style={styles.container}>
+        <Portal>
+          <Dialog visible={visible} onDismiss={hideDialog}>
+            <Dialog.Title>Alterar quantidade do Produto</Dialog.Title>
+            <Dialog.Content>
+              <TextInput
+                label="Quantidade"
+                keyboardType="numeric"
+                value={venda.quantidadeAlterada}
+                onChangeText={val => setValues('quantidadeAlterada', val)}
+              />
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={inserirCustomProduto}>Inserir</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
         <List.Section>
           <List.Subheader onPress={() => setStep(2)}>Selecionar Cliente</List.Subheader>
           <Divider />
@@ -112,6 +155,7 @@ export default function Vendas() {
             <List.Item
               title={`R$${prod.valorVenda} - ${prod.nome}`}
               key={prod.id}
+              onLongPress={() => onLongPressButton(prod)}
               onPress={() => addProduto(prod)}
               left={props => <List.Icon {...props} icon="folder" />}
               right={props => <List.Icon {...props} icon="plus" />}

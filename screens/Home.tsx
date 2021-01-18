@@ -2,21 +2,23 @@
 import * as React from 'react';
 import { StyleSheet } from 'react-native';
 import { View } from '../components/Themed';
-import { 
-  Button, 
-  ActivityIndicator, 
+import {
+  Button,
+  ActivityIndicator,
   Colors,
   Card,
   Avatar
 } from 'react-native-paper';
 import Sincronizar from '../service/Sincronizacao';
-import { 
+import {
   readVendas
 } from '../storage';
+import { appContext } from '../context/useContext'
 
 export default function Home() {
   const [text, setText] = React.useState('Sincronizar')
   const [totalVendasPendente, setTotalVendasPendente] = React.useState(0)
+  const { dataUpdated, update } = appContext()
 
   React.useEffect(() => {
     readVendas().then(result => {
@@ -24,10 +26,13 @@ export default function Home() {
         setTotalVendasPendente(result.length)
       }
     })
-  }, [])
+  }, [dataUpdated])
 
   const sincronizar = React.useCallback(() => {
     Sincronizar(setText)
+    setTimeout(() => {
+      update()
+    }, 5000)
   }, [])
 
   return (
@@ -43,7 +48,7 @@ export default function Home() {
       </Card>
       <Button mode="contained" onPress={sincronizar}>
         {text}
-      </Button> 
+      </Button>
     </View>
   );
 }
