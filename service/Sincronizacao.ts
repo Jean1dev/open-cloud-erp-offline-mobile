@@ -38,7 +38,7 @@ export default async (callback: Function) => {
 
                         vendas.map(venda => ({
                             mobile: true,
-                            cliente: venda.cliente.id,
+                            cliente: venda.cliente?.id,
                             valorRecebido: venda.valorRecebido,
                             itens: venda.itens.map(produto => ({
                                 valorUnitario: produto.valorVenda,
