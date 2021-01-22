@@ -12,7 +12,6 @@ import {
   TextInput,
   Portal,
   Dialog,
-  Paragraph
 } from 'react-native-paper';
 import { appContext } from '../context/useContext'
 
@@ -24,7 +23,7 @@ export default function Vendas() {
   const [alreadyLoad, setAlreadyLoad] = React.useState(false)
   const { dataUpdated, update } = appContext()
   const [visible, setVisible] = React.useState(false);
-
+  
   const showDialog = () => setVisible(true);
 
   const hideDialog = () => setVisible(false);
@@ -43,6 +42,7 @@ export default function Vendas() {
 
   const addProduto = React.useCallback((prod) => {
     const list = venda.itens || []
+    
     function getQuantidade() {
       return prod.customizado ? prod.quantidade : 1
     }
@@ -66,7 +66,7 @@ export default function Vendas() {
   const onLongPressButton = React.useCallback((prod) => {
     setValues('produtoSelecionado', prod)
     showDialog()
-  }, [])
+  }, [venda])
 
   const plusProduto = React.useCallback((prod) => {
     prod.quantidade++
@@ -90,6 +90,7 @@ export default function Vendas() {
     const vendaCopy = venda
     vendaCopy.uuid = Math.random()
     vendaCopy.valorRecebido = venda.valorRecebido || totalVenda
+    vendaCopy.totalVenda = totalVenda
     storeVendas(vendaCopy).then(() => {
       setStep(1)
       setVenda({})
