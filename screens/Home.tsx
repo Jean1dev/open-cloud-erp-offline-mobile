@@ -6,9 +6,10 @@ import {
   Button,
   Card,
   Avatar,
-  Divider
+  Divider,
+  Snackbar
 } from 'react-native-paper';
-import Sincronizar from '../service/Sincronizacao';
+import Sincronizar, { removeVenda } from '../service/Sincronizacao';
 import {
   readVendas
 } from '../storage';
@@ -19,6 +20,18 @@ export default function Home() {
   const [totalVendasPendente, setTotalVendasPendente] = React.useState(0)
   const [vendas, setVendas] = React.useState([])
   const { dataUpdated, update } = appContext()
+  const [removerEssaVenda, setRemover] = React.useState({})
+  const [visible, setVisible] = React.useState(false);
+
+  const onToggleSnackBar = () => setVisible(!visible);
+
+  const onDismissSnackBar = () => setVisible(false);
+
+  const removerVenda = () => {
+    removeVenda(removerEssaVenda)
+    onDismissSnackBar()
+    setTimeout(() => update(), 2000)
+  }
 
   React.useEffect(() => {
     readVendas().then(result => {
@@ -37,6 +50,13 @@ export default function Home() {
     }, 5000)
   }, [])
 
+  const perguntaSeQuerRemoverVenda = React.useCallback((venda) => {
+    console.log(venda.uuid)
+    setTimeout(() => onDismissSnackBar(), 3000)
+    onToggleSnackBar()
+    setRemover(venda)
+  }, [])
+
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
@@ -53,19 +73,28 @@ export default function Home() {
       </Button>
       <Divider />
       {vendas.map(venda => (
-        
-        <Card 
-          onPress={() => console.log(venda.uuid)}
-          style={styles.card} 
+
+        <Card
+          onPress={() => perguntaSeQuerRemoverVenda(venda)}
+          style={styles.card}
           key={venda.uuid}>
           <Card.Title
             title={`Venda para o cliente ${venda.cliente?.nome}`}
             subtitle={`Valor total da venda ${venda.totalVenda}`}
-            left={(props) => <Avatar.Icon {...props} icon="cart" />}
+            right={(props) => <Avatar.Icon {...props} icon="cart" />}
           />
 
         </Card>
       ))}
+      <Snackbar
+        visible={visible}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: 'Sim',
+          onPress: () => removerVenda()
+        }}>
+        Remover essa venda.
+      </Snackbar>
     </View>
   );
 }

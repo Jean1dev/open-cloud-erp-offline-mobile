@@ -7,7 +7,7 @@ import {
     overwriteVendas
 } from '../storage';
 
-function removeVenda(venda) {
+export function removeVenda(venda) {
     readVendas().then(vendas => {
         const restantes = vendas.filter(element => element.uuid != venda.uuid)
         overwriteVendas(restantes).then(() => console.log('venda removida ', venda.uuid))
