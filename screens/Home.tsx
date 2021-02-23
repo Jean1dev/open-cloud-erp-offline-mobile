@@ -21,11 +21,12 @@ export default function Home() {
   const [vendas, setVendas] = React.useState([])
   const { dataUpdated, update } = appContext()
   const [removerEssaVenda, setRemover] = React.useState({})
-  const [visible, setVisible] = React.useState(false);
+  const [visible, setVisible] = React.useState(false)
+  const [disableSyncButton, setDisableSyncButton] = React.useState(false)
 
-  const onToggleSnackBar = () => setVisible(!visible);
+  const onToggleSnackBar = () => setVisible(!visible)
 
-  const onDismissSnackBar = () => setVisible(false);
+  const onDismissSnackBar = () => setVisible(false)
 
   const removerVenda = () => {
     removeVenda(removerEssaVenda)
@@ -42,12 +43,15 @@ export default function Home() {
     })
   }, [dataUpdated])
 
+  const callbackSync = text => {
+    setText(text)
+    setTimeout(() => setDisableSyncButton(false), 5000)
+  }
+
   const sincronizar = React.useCallback(() => {
-    Sincronizar(setText)
-    setTimeout(() => {
-      console.log('foi')
-      update()
-    }, 5000)
+    setDisableSyncButton(true)
+    Sincronizar(callbackSync)
+    setTimeout(() => update(), 5000)
   }, [])
 
   const perguntaSeQuerRemoverVenda = React.useCallback((venda) => {
@@ -68,7 +72,7 @@ export default function Home() {
 
       </Card>
       <Divider />
-      <Button mode="contained" onPress={sincronizar}>
+      <Button disabled={disableSyncButton} mode="contained" onPress={sincronizar}>
         {text}
       </Button>
       <Divider />
