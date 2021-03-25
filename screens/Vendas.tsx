@@ -12,6 +12,7 @@ import {
   TextInput,
   Portal,
   Dialog,
+  Searchbar
 } from 'react-native-paper';
 import { appContext } from '../context/useContext'
 
@@ -23,7 +24,17 @@ export default function Vendas() {
   const [alreadyLoad, setAlreadyLoad] = React.useState(false)
   const { dataUpdated, update } = appContext()
   const [visible, setVisible] = React.useState(false);
-  
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const onChangeSearch = query => {
+    setSearchQuery(query)
+    if (!query) {
+      update()
+      return
+    }
+    setProdutos(produtos.filter(p => p.nome.includes(query)))
+  };
+
   const showDialog = () => setVisible(true);
 
   const hideDialog = () => setVisible(false);
@@ -42,7 +53,7 @@ export default function Vendas() {
 
   const addProduto = React.useCallback((prod) => {
     const list = venda.itens || []
-    
+
     function getQuantidade() {
       return prod.customizado ? prod.quantidade : 1
     }
@@ -152,6 +163,12 @@ export default function Vendas() {
           <List.Subheader onPress={() => setStep(2)}>Selecionar Cliente</List.Subheader>
           <Divider />
           <List.Subheader>Produtos</List.Subheader>
+          <Searchbar
+            placeholder="Procurar produto"
+            onChangeText={onChangeSearch}
+            onIconPress={() => console.log('click')}
+            value={searchQuery}
+          />
           {produtos.map(prod => (
             <List.Item
               title={`R$${prod.valorVenda} - ${prod.nome}`}
