@@ -32,7 +32,7 @@ export default function Vendas() {
       update()
       return
     }
-    setProdutos(produtos.filter(p => p.nome.includes(query)))
+    setProdutos(produtos.filter(p => p.nome.toUpperCase().includes(query.toUpperCase())))
   };
 
   const showDialog = () => setVisible(true);
