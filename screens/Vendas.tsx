@@ -111,6 +111,7 @@ export default function Vendas() {
 
   const inserirCustomProduto = React.useCallback(() => {
     const produto = venda.produtoSelecionado
+    produto.valorVenda = venda.valorAlterado || produto.valorVenda
     produto.quantidade = venda.quantidadeAlterada
     produto.customizado = true
     addProduto(produto)
@@ -145,7 +146,7 @@ export default function Vendas() {
       <ScrollView style={styles.container}>
         <Portal>
           <Dialog visible={visible} onDismiss={hideDialog}>
-            <Dialog.Title>Alterar quantidade do Produto</Dialog.Title>
+            <Dialog.Title>Alterar quantidade/Valor do Produto</Dialog.Title>
             <Dialog.Content>
               <TextInput
                 label="Quantidade"
@@ -153,6 +154,13 @@ export default function Vendas() {
                 value={venda.quantidadeAlterada}
                 onChangeText={val => setValues('quantidadeAlterada', val)}
               />
+              <TextInput
+                label="Valor"
+                keyboardType="numeric"
+                value={venda.valorAlterado}
+                onChangeText={val => setValues('valorAlterado', val)}
+              />
+
             </Dialog.Content>
             <Dialog.Actions>
               <Button onPress={inserirCustomProduto}>Inserir</Button>
