@@ -40,6 +40,7 @@ export default async (callback: Function) => {
                             mobile: true,
                             cliente: venda.cliente?.id,
                             valorRecebido: venda.valorRecebido,
+                            dataLimitePagamento: venda.dataLimitePagamento,
                             itens: venda.itens.map(produto => ({
                                 valorUnitario: produto.valorVenda,
                                 quantidade: produto.quantidade,

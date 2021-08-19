@@ -1,7 +1,7 @@
 //@ts-nocheck
-import * as React from 'react';
-import { readProduto, readCliente, storeVendas } from '../storage';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import * as React from 'react'
+import { readProduto, readCliente, storeVendas } from '../storage'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import {
   List,
   IconButton,
@@ -13,8 +13,9 @@ import {
   Portal,
   Dialog,
   Searchbar
-} from 'react-native-paper';
+} from 'react-native-paper'
 import { appContext } from '../context/useContext'
+import DatePicker from 'react-native-datepicker'
 
 export default function Vendas() {
   const [step, setStep] = React.useState(1)
@@ -24,7 +25,8 @@ export default function Vendas() {
   const [alreadyLoad, setAlreadyLoad] = React.useState(false)
   const { dataUpdated, update } = appContext()
   const [visible, setVisible] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const [dataPagamento, setDataPagamento] = React.useState(undefined)
 
   const onChangeSearch = query => {
     setSearchQuery(query)
@@ -102,12 +104,13 @@ export default function Vendas() {
     vendaCopy.uuid = Math.random()
     vendaCopy.valorRecebido = venda.valorRecebido || totalVenda
     vendaCopy.totalVenda = totalVenda
+    vendaCopy.dataLimitePagamento = dataPagamento
     storeVendas(vendaCopy).then(() => {
       setStep(1)
       setVenda({})
       update()
     })
-  }, [venda])
+  }, [venda, dataPagamento])
 
   const inserirCustomProduto = React.useCallback(() => {
     const produto = venda.produtoSelecionado
@@ -229,9 +232,32 @@ export default function Vendas() {
             onChangeText={val => setValues('valorRecebido', val)}
           />
           <Divider />
+          <DatePicker
+            style={{ width: 200 }}
+            date={dataPagamento}
+            mode="date"
+            placeholder="select date"
+            format="YYYY-MM-DD"
+            minDate="2021-08-01"
+            confirmBtnText="Confirm"
+            cancelBtnText="Cancel"
+            customStyles={{
+              dateIcon: {
+                position: 'absolute',
+                left: 0,
+                top: 4,
+                marginLeft: 0
+              },
+              dateInput: {
+                marginLeft: 36
+              }
+            }}
+            onDateChange={(date) => { setDataPagamento(date) }}
+          />
+          <Divider />
           <Button icon="cart" mode="contained" onPress={doVenda}>
             Vender
-        </Button>
+          </Button>
         </Card.Content>
       </Card>
 
