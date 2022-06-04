@@ -30,5 +30,5 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
     - run: expo login -u ${{ secrets.EXPO_USERNAME }} -p ${{ secrets.EXPO_PASSWORD }}
-    - run: expo build:android --no-wait
-    - run: expo build:ios --no-wait
+    - run: npm install -g eas-cli
+    - run: eas build --platform android
